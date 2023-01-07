@@ -9,4 +9,5 @@ module.exports = async function (getNamedAccounts, deployments) {
     if (developmentChains.includes(network.name)) {
         console.log("Local network detected! Deploying mocks... ")
     }
+    
 }
