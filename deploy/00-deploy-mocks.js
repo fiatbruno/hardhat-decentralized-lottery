@@ -5,10 +5,10 @@ const BASE_FEE = ethers.utils.parseEther("0.25")
 const GAS_PRICE_LINK = 1e9
 args = [BASE_FEE, GAS_PRICE_LINK]
 
-module.exports = async function (getNamedAccounts, deployments) {
+module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
     const { deployer } = getNamedAccounts()
-    const chainId = network.name.chainId
+    const chainId = network.config.chainId
 
     if (developmentChains.includes(network.name)) {
         log("Local network detected! Deploying mocks... ")
