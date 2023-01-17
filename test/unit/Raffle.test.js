@@ -87,4 +87,45 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   assert(upkeepNeeded)
               })
           })
+          describe("performUpkeep", function () {
+              it("it can only run if checkupkeep is true", async function () {
+                  await raffle.enterRaffle({ value: raffleEntranceFee })
+                  await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
+                  await network.provider.send("evm_mine", [])
+                  const tx = await raffle.performUpkeep([])
+                  assert(tx)
+              })
+              it("reverts when chekupkeep is false", async function () {
+                  await expect(raffle.performUpkeep([])).to.be.revertedWithCustomError(
+                      raffle,
+                      "Raffle__UpkeepNotNeeded"
+                  )
+              })
+              it("updates the raflle state, emits an event, and calls the vrf coordinator", async function () {
+                  await raffle.enterRaffle({ value: raffleEntranceFee })
+                  await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
+                  await network.provider.send("evm_mine", [])
+                  const txResponse = await raffle.performUpkeep([])
+                  const txReceipt = await txResponse.wait(1)
+                  const requestId = txReceipt.events[1].args.requestId
+                  const raffleState = await raffle.getRaffleState()
+                  assert(requestId.toNumber() > 0)
+                  assert(raffleState.toString() == "1")
+              })
+          })
+          describe("fulfillRandomWords", function () {
+              beforeEach(async function () {
+                  await raffle.enterRaffle({ value: raffleEntranceFee })
+                  await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
+                  await network.provider.send("evm_mine", [])
+              })
+              it("can only be called after performUpkeep", async function() {
+                await expect(
+                    vrfCoordinatorV2Mock.fulfillRandomWords(0, raffle.address)
+                ).to.be.rejectedWith("nonexistent request")
+                await expect(
+                    vrfCoordinatorV2Mock.fulfillRandomWords(1, raffle.address)
+                ).to.be.rejectedWith("nonexistent request")
+              })
+          })
       })
