@@ -8,21 +8,21 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
-    let vrfCoordinatorV2Address, subcriptionId
+    let vrfCoordinatorV2Address, subscriptionId, vrfCoordinatorV2Mock
 
     if (developmentChains.includes(network.name)) {
-        const vrfCoordinatorV2Mock = await ethers.getContractAt(
+        vrfCoordinatorV2Mock = await ethers.getContractAt(
             "VRFCoordinatorV2Mock",
             "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         )
         vrfCoordinatorV2Address = vrfCoordinatorV2Mock.address
         const transactionResponse = await vrfCoordinatorV2Mock.createSubscription()
         const transactionReceipt = await transactionResponse.wait(1)
-        subcriptionId = transactionReceipt.events[0].args.subId
-        await vrfCoordinatorV2Mock.fundSubscription(subcriptionId, SUB_ID_FUND_AMOUNT)
+        subscriptionId = transactionReceipt.events[0].args.subId
+        await vrfCoordinatorV2Mock.fundSubscription(subscriptionId, SUB_ID_FUND_AMOUNT)
     } else {
         vrfCoordinatorV2Address = networkConfig[chainId]["vrfCoordinatorV2"]
-        subcriptionId = networkConfig[chainId]["subscriptionId"]
+        subscriptionId = networkConfig[chainId]["subscriptionId"]
     }
 
     const entranceFee = networkConfig[chainId]["entranceFee"]
@@ -34,7 +34,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         vrfCoordinatorV2Address,
         entranceFee,
         gasLane,
-        subcriptionId,
+        subscriptionId,
         callbackGasLimit,
         interval,
     ]
@@ -44,6 +44,11 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     })
+    if (developmentChains.includes(network.name)) {
+        await vrfCoordinatorV2Mock.addConsumer(subscriptionId.toNumber(), raffle.address)
+
+        log("✨ Consumer is added!")
+    }
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         log("Verifying...")
         await verify(raffle.address, args)
