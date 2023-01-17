@@ -7,7 +7,7 @@ args = [BASE_FEE, GAS_PRICE_LINK]
 
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deploy, log } = deployments
-    const { deployer } = getNamedAccounts()
+    const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId
 
     if (developmentChains.includes(network.name)) {
@@ -19,7 +19,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
             args: args,
         })
         log("✨ Mocks Deployed!")
-        log("-----------------------------------------------")
+    log("-----------------------------------------------------------")
     }
 }
 module.exports.tags = ["all", "mocks"]
