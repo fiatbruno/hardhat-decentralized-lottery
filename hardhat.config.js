@@ -32,4 +32,14 @@ module.exports = {
             default: 1,
         },
     },
+    etherscan: {
+        apiKey: ETHERSCAN_API_KEY,
+    },
+    gasReporter: {
+        enabled: false,
+        currency: "USD",
+        outputFile: "gas-report.txt",
+        noColors: true,
+        // coinmarketcap: COINMARKETCAP_API_KEY,
+    },
 }

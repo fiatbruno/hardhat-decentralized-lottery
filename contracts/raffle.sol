@@ -11,9 +11,9 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
-error Raffle_NotEnoughETHEntered();
-error Raffle_TransferFailed();
-error Raffle_NotOpen();
+error Raffle__NotEnoughETHEntered();
+error Raffle__TransferFailed();
+error Raffle__NotOpen();
 error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
 /**
@@ -72,10 +72,10 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     function enterRaffle() public payable {
         if (msg.value < i_entranceFee) {
-            revert Raffle_NotEnoughETHEntered();
+            revert Raffle__NotEnoughETHEntered();
         }
         if (s_raffleState != RaffleState.OPEN) {
-            revert Raffle_NotOpen();
+            revert Raffle__NotOpen();
         }
         s_players.push(payable(msg.sender));
 
@@ -142,7 +142,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
 
         if (!success) {
-            revert Raffle_TransferFailed();
+            revert Raffle__TransferFailed();
         }
         emit WinnerPicked(recentWinner);
     }
@@ -174,5 +174,9 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     function getRequestComfirmations() public pure returns (uint256) {
         return REQUEST_CONFIRMATIONS;
+    }
+    
+    function getInterval() public view returns (uint256){
+        return i_interval;
     }
 }
