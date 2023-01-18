@@ -119,13 +119,29 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
                   await network.provider.send("evm_mine", [])
               })
-              it("can only be called after performUpkeep", async function() {
-                await expect(
-                    vrfCoordinatorV2Mock.fulfillRandomWords(0, raffle.address)
-                ).to.be.rejectedWith("nonexistent request")
-                await expect(
-                    vrfCoordinatorV2Mock.fulfillRandomWords(1, raffle.address)
-                ).to.be.rejectedWith("nonexistent request")
+              it("can only be called after performUpkeep", async function () {
+                  await expect(
+                      vrfCoordinatorV2Mock.fulfillRandomWords(0, raffle.address)
+                  ).to.be.rejectedWith("nonexistent request")
+                  await expect(
+                      vrfCoordinatorV2Mock.fulfillRandomWords(1, raffle.address)
+                  ).to.be.rejectedWith("nonexistent request")
+              })
+              // Huge test: way to big!
+              it("picks a winner, resets the lottery, and sends money", async function () {
+                  const additionalEntrants = 3
+                  const startingAccountIndex = 1 // because deployer = 0
+                  const accounts = await ethers.getSigners()
+                  for (
+                      let i = startingAccountIndex;
+                      i < startingAccountIndex + additionalEntrants;
+                      i++
+                  ) {
+                      const accountConnectedRaffle = raffle.connect(accounts[i])
+                      await accountConnectedRaffle.enterRaffle({ value: raffleEntranceFee })
+                  }
+                  const startingTimeStamp = await raffle.getLastTimeStamp()
+                  
               })
           })
       })
