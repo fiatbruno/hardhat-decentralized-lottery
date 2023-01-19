@@ -16,11 +16,13 @@ developmentChains.includes(network.name)
           describe("fulfillRandomWords", function () {
               it("works with live Chainlink Keepers and Chainlink VRF, we get a random winner", async function () {
                   // enter the raffle only
+                  console.log("Setting up test...")
                   const startingTimeStamp = await raffle.getLatestTimeStamp()
                   const accounts = await ethers.getSigners()
 
                   // setup listerner before entering raffle
                   // Just in case blockchain moves really FAST
+                  console.log("Setting up Listener...")
                   await new Promise(async (resolve, reject) => {
                       raffle.once("WinnerPicked", async () => {
                           console.log("✨ WinnerPicked event fired!")
@@ -47,7 +49,10 @@ developmentChains.includes(network.name)
                       })
 
                       // Then entering the raffle
-                      await raffle.enterRaffle({ value: raffleEntranceFee })
+                      console.log("Entering Raffle...")
+                      const tx = await raffle.enterRaffle({ value: raffleEntranceFee })
+                      await tx.wait(1)
+                      console.log("Ok, time to wait...")
                       const winnerStartingBalance = await accounts[0].getBalance()
 
                       // and this code won't complet until our listener has finished listening!
