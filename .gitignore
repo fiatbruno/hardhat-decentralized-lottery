@@ -1,4 +1,5 @@
 .encryptedKey.json
+.env
 # vscode
 .vscode
 
@@ -101,6 +102,4 @@ lint/tmp/
 
 gas-report.txt
 .env
-.env
 .env*.local
-.env
